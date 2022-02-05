@@ -3,6 +3,7 @@ import fs from "fs";
 import ReliableCmds from '.';
 import Command from './Command';
 import getAllFiles from "./get-all-files";
+import ICommand from "./interfaces/ICommand";
 
 class CommandHandler {
     private _commands: Map<String , Command> = new Map();
@@ -18,18 +19,61 @@ class CommandHandler {
                     console.log(`Found and Loaded ${amount} command(s)`);
 
                     for(const file of files){
-                        const configuration = require(file)
-                        const { aliases , callback } = configuration;
+                        let fileName: string | string[] = file
+                            .replace(/\\/g , '/')
+                            .split('/')
+                        fileName = fileName[fileName.length - 1];
+                        fileName = fileName.split('.')[0].toLowerCase();
 
-                        if(aliases && aliases.length && callback){
+                        const configuration = require(file)
+                        const {
+                            name ,
+                            commands ,
+                            aliases ,
+                            callback ,
+                            execute ,
+                            description
+                        } = configuration;
+
+                        if(callback && execute){
+                            throw new Error(`Command ${fileName} has both callback and execute , please use one or the other`);
+                        }
+
+                        let names = commands || aliases;
+
+                        if(!name && (!names || names.length === 0)){
+                            throw new Error(`Command ${fileName} has no name or aliases.`);
+                        }
+
+                        if(typeof names === 'string'){
+                            names = [names];
+                        }
+
+                        if(name && !names.includes(name.toLowerCase())){
+                            names.unshift(name.toLowerCase());
+                        }
+
+                        if(!names.includes(fileName)){
+                            name.unshift(fileName);
+                        }
+
+                        if(!description){
+                            console.warn(`Command ${fileName} has no description property.`);
+                        }
+
+                        const hasCallback = callback || execute;
+
+                        if(hasCallback){
                             const command = new Command(
                                 instance ,
                                 client ,
+                                names ,
+                                callback || execute ,
                                 configuration
-                            );
+                            )
 
-                            for(const alias of aliases){
-                                this._commands.set(alias.toLowerCase() , command);
+                            for(const name of names){
+                                this._commands.set(name , command);
                             }
                         }
                     }
@@ -59,6 +103,19 @@ class CommandHandler {
                 throw new Error(`Command directory ${dir} does not exist`);
             }
         }
+    }
+
+    public get commands(): ICommand[]{
+        const results = new Map();
+
+        this._commands.forEach(({ names , description = ''}) => {
+            results.set(names[0] , {
+                names ,
+                description
+            })
+        })
+
+        return Array.from(results.values())
     }
 }
 

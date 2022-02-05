@@ -1,6 +1,7 @@
 import { Client , Guild } from 'discord.js';
 import CommandHandler from './CommandHandler';
 import ListenerHandler from './ListenerHandler';
+import ICommand from './interfaces/ICommand';
 
 class ReliableCmds{
     private _defualtPrefix = ">";
@@ -9,6 +10,7 @@ class ReliableCmds{
     private _listenerDir: string | undefined;
     private _mongo = ''
     private _prefixes: { [name: string]: string } = {};
+    private _commandHandler: CommandHandler;
 
     constructor(client: Client , commandsDir?: string , listenerDir?: string){
         if(!client){
@@ -33,7 +35,7 @@ class ReliableCmds{
 
         this._commandsDir = commandsDir || this._commandsDir;
         this._listenerDir = listenerDir || this._listenerDir;
-        new CommandHandler(this , client , this._commandsDir);
+        this._commandHandler = new CommandHandler(this , client , this._commandsDir);
         if(this._listenerDir){
             new ListenerHandler(client , this._listenerDir);
         }
@@ -64,6 +66,14 @@ class ReliableCmds{
 
     public getPrefix(guild: Guild | null): string {
         return this._prefixes[guild ? guild.id : ''] || this._defualtPrefix;
+    }
+
+    public get commands(): ICommand[]{
+        return this._commandHandler.commands;
+    }
+
+    public get CommandAmount(): number {
+        return this.commands.length;
     }
 }
 

@@ -28,7 +28,7 @@ var ReliableCmds = /** @class */ (function () {
         }
         this._commandsDir = commandsDir || this._commandsDir;
         this._listenerDir = listenerDir || this._listenerDir;
-        new CommandHandler_1.default(this, client, this._commandsDir);
+        this._commandHandler = new CommandHandler_1.default(this, client, this._commandsDir);
         if (this._listenerDir) {
             new ListenerHandler_1.default(client, this._listenerDir);
         }
@@ -65,6 +65,20 @@ var ReliableCmds = /** @class */ (function () {
     ReliableCmds.prototype.getPrefix = function (guild) {
         return this._prefixes[guild ? guild.id : ''] || this._defualtPrefix;
     };
+    Object.defineProperty(ReliableCmds.prototype, "commands", {
+        get: function () {
+            return this._commandHandler.commands;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ReliableCmds.prototype, "CommandAmount", {
+        get: function () {
+            return this.commands.length;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return ReliableCmds;
 }());
 module.exports = ReliableCmds;
