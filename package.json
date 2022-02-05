@@ -1,7 +1,7 @@
 {
-  "name": "relaiblecmds",
+  "name": "reliablecmds",
   "version": "1.0.0",
-  "description": "Do `npm i reliablecmd`",
+  "description": "An Easy Discord.JS Command Handler for your use!",
   "main": "index.js",
   "scripts": {
     "compile": "tsc && node index.js",
