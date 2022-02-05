@@ -1,9 +1,12 @@
 import { Client , Guild } from 'discord.js';
 import CommandHandler from './CommandHandler';
+import ListenerHandler from './ListenerHandler';
 
 class ReliableCmds{
     private _defualtPrefix = ">";
     private _commandsDir = 'commands'
+    // private _listenerDir: '';
+    private _listenerDir: string | undefined;
     private _mongo = ''
     private _prefixes: { [name: string]: string } = {};
 
@@ -16,17 +19,24 @@ class ReliableCmds{
             console.warn(`No commands directory provided , defaulting to ${this._commandsDir}`);
         }
 
-        // Get Directory Path
         if(module && module.parent){
             // @ts-ignore
             const { path } = module.parent;
             if(path){
-                commandsDir = `${path}/${commandsDir || this._commandsDir}`;
+                commandsDir = `${path}/${this._commandsDir}`;
+
+                if(listenerDir){
+                    listenerDir = `${path}/${listenerDir}`;
+                }
             }
         }
 
         this._commandsDir = commandsDir || this._commandsDir;
+        this._listenerDir = listenerDir || this._listenerDir;
         new CommandHandler(this , client , this._commandsDir);
+        if(this._listenerDir){
+            new ListenerHandler(client , this._listenerDir);
+        }
 
     }
 

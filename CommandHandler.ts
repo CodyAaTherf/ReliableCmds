@@ -38,8 +38,25 @@ class CommandHandler {
                         const guild: Guild | null = message.guild;
                         let content: string = message.content;
                         const prefix = instance.getPrefix(guild);
+
+                        if (content.startsWith(prefix)){
+                            content = content.substring(prefix.length);
+                            const words = content.split(/ /g);
+                            const firstElement = words.shift()
+
+                            if(firstElement){
+                                const alias = firstElement.toLowerCase();
+                                const command = this._commands.get(alias);
+                                
+                                if(command){
+                                    command.execute(message , words);
+                                }
+                            }
+                        }
                     })
                 }
+            } else {
+                throw new Error(`Command directory ${dir} does not exist`);
             }
         }
     }
