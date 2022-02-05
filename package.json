@@ -1,0 +1,25 @@
+{
+  "name": "relaiblecmds",
+  "version": "1.0.0",
+  "description": "Do `npm i reliablecmd`",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodyAaTherf/RelaibleCmds.git"
+  },
+  "keywords": [
+    "NPM-Package",
+    "Command-Handler",
+    "Discord",
+    "Discord.js"
+  ],
+  "author": "AaTherf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CodyAaTherf/RelaibleCmds/issues"
+  },
+  "homepage": "https://github.com/CodyAaTherf/RelaibleCmds#readme"
+}
