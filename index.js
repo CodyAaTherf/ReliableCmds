@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 var CommandHandler_1 = __importDefault(require("./CommandHandler"));
+var ListenerHandler_1 = __importDefault(require("./ListenerHandler"));
 var ReliableCmds = /** @class */ (function () {
     function ReliableCmds(client, commandsDir, listenerDir) {
         this._defualtPrefix = ">";
@@ -15,16 +16,22 @@ var ReliableCmds = /** @class */ (function () {
         if (!commandsDir) {
             console.warn("No commands directory provided , defaulting to ".concat(this._commandsDir));
         }
-        // Get Directory Path
         if (module && module.parent) {
             // @ts-ignore
             var path = module.parent.path;
             if (path) {
-                commandsDir = "".concat(path, "/").concat(commandsDir || this._commandsDir);
+                commandsDir = "".concat(path, "/").concat(this._commandsDir);
+                if (listenerDir) {
+                    listenerDir = "".concat(path, "/").concat(listenerDir);
+                }
             }
         }
         this._commandsDir = commandsDir || this._commandsDir;
+        this._listenerDir = listenerDir || this._listenerDir;
         new CommandHandler_1.default(this, client, this._commandsDir);
+        if (this._listenerDir) {
+            new ListenerHandler_1.default(client, this._listenerDir);
+        }
     }
     Object.defineProperty(ReliableCmds.prototype, "mongoPath", {
         get: function () {
