@@ -27,7 +27,7 @@ class CommandHandler {
 
                         const configuration = require(file)
                         const {
-                            name ,
+                            name = fileName ,
                             commands ,
                             aliases ,
                             callback ,
@@ -39,7 +39,7 @@ class CommandHandler {
                             throw new Error(`Command ${fileName} has both callback and execute , please use one or the other`);
                         }
 
-                        let names = commands || aliases;
+                        let names = commands || aliases || [];
 
                         if(!name && (!names || names.length === 0)){
                             throw new Error(`Command ${fileName} has no name or aliases.`);
@@ -51,10 +51,6 @@ class CommandHandler {
 
                         if(name && !names.includes(name.toLowerCase())){
                             names.unshift(name.toLowerCase());
-                        }
-
-                        if(!names.includes(fileName)){
-                            name.unshift(fileName);
                         }
 
                         if(!description){
