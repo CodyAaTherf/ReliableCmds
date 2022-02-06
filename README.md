@@ -4,13 +4,42 @@
 
 # Table of Contents
 
-- Installation
+- [Installation](#installation)
+- [Setup](#installation)
+- [Support and Features Request](#support-and-feature-requests)
 
 # Installation
 
 ```bash
 npm i reliablecmds
 ```
+
+# Setup
+
+After you have installed ReliableCmds you need to initilize ReliableCmds in your project:
+
+```JS
+const Discord = require('discord.js);
+const ReliableCmds = require('reliablecmds');
+const { token } = require('config.json');
+
+const client = new Discord.Client();
+
+client.on('ready' , () => {
+    console.log(`${client.user.tag} has logged in!`);
+
+    new ReliableCmds(client);
+})
+
+client.login(token);
+```
+
+You can specify your commands folder by doing-
+```js
+new ReliableCmds(client , 'bot-commands`);
+```
+
+If you leave the `commands` field blank it will default to `commands`.
 
 # Support and Feature Requests
 

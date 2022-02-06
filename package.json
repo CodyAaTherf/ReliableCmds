@@ -1,6 +1,6 @@
 {
   "name": "reliablecmds",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An Easy Discord.JS Command Handler for your use!",
   "main": "index.js",
   "scripts": {
