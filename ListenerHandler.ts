@@ -13,8 +13,24 @@ class ListenerHandler{
                 if (amount > 0){
                     console.log(`Loading ${amount} listeners`);
                     
-                    for(const file of files){
+                    for(const[file , fileName] of files){
                         const func = require(file)
+
+                        const { feature } = func;
+                        if(!feature){
+                            throw new Error(`Listener ${fileName} has no feature property.`);
+                        }
+
+                        const{ name , canDisable , notFeature } = feature;
+
+                        if(notFeature === true){
+                            continue;
+                        }
+
+                        if(name === undefined || canDisable === undefined){
+                            throw new Error(`Listener ${fileName} has no name or canDisable property.`);
+                        }
+
                         if(typeof func === 'function'){
                             func(client)
                         }

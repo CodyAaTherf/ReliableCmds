@@ -40,6 +40,12 @@ class ReliableCmds{
             new ListenerHandler(client , this._listenerDir);
         }
 
+        setTimeout(() => {
+            if(!this._mongo){
+                console.warn('No mongo path provided'); 
+            }
+        } , 1000);
+
     }
 
     public get mongoPath(): string {
