@@ -2,6 +2,7 @@ import { Client , Guild } from 'discord.js';
 import CommandHandler from './CommandHandler';
 import ListenerHandler from './ListenerHandler';
 import ICommand from './interfaces/ICommand';
+import mongo from './mongo';
 
 class ReliableCmds{
     private _defualtPrefix = ">";
@@ -42,9 +43,11 @@ class ReliableCmds{
 
         setTimeout(() => {
             if(!this._mongo){
+                mongo(this._mongo)
+            } else {
                 console.warn('No mongo path provided'); 
             }
-        } , 1000);
+        } , 500);
 
     }
 

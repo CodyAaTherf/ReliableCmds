@@ -26,7 +26,9 @@ class CommandHandler {
                             aliases ,
                             callback ,
                             execute ,
-                            description
+                            description ,
+                            minArgs ,
+                            maxArgs ,
                         } = configuration;
 
                         if(callback && execute){
@@ -75,15 +77,27 @@ class CommandHandler {
 
                         if (content.startsWith(prefix)){
                             content = content.substring(prefix.length);
-                            const words = content.split(/ /g);
-                            const firstElement = words.shift()
+                            const args = content.split(/ /g);
+                            const firstElement = args.shift()
 
                             if(firstElement){
-                                const alias = firstElement.toLowerCase();
-                                const command = this._commands.get(alias);
+                                const name = firstElement.toLowerCase();
+                                const command = this._commands.get(name);
                                 
                                 if(command){
-                                    command.execute(message , words);
+                                    const{ minArgs , maxArgs } = command;
+
+                                    if(minArgs !== undefined && args.length < minArgs){
+                                        message.reply(`You need at least ${minArgs} arguments to run this command.`);
+                                        return;
+                                    }
+
+                                    if(maxArgs !== undefined && maxArgs !== -1 && args.length > maxArgs){
+                                        message.reply(`You can only have a maximum of ${maxArgs} arguments to run this command.`);
+                                        return;
+                                    }
+
+                                    command.execute(message , args);
                                 }
                             }
                         }

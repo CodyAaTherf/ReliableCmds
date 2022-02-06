@@ -7,7 +7,7 @@ class Command{
     private client: Client;
     private _names: string[] = [];
     private _minArgs: number = 0;
-    private _maxArgs: number = -1;
+    private _maxArgs: number;
     private _expectedArgs?: string;
     private _description?: string;
     private _cooldown: string[] = [];
@@ -24,10 +24,22 @@ class Command{
         this.client = client;
         this._names = typeof names === 'string' ? [names] : names;
         this._minArgs = minArgs || 0;
-        this._maxArgs = maxArgs || -1;
+        this._maxArgs = maxArgs === undefined ? -1 : maxArgs;
         this._expectedArgs = expectedArgs;
         this._description = description;
         this._callback = callback;
+
+        if(this._minArgs < 0){
+            throw new Error(`minArgs must be greater than or equal to 0.`);
+        }
+
+        if(this._maxArgs < -1){
+            throw new Error(`maxArgs must be greater than or equal to -1.`);
+        }
+
+        if(this._maxArgs !== -1 && this._maxArgs < this._minArgs){
+            throw new Error(`maxArgs must be greater than or equal to minArgs.`);
+        }
     }
 
     public execute(message: Message , args: string[]) {

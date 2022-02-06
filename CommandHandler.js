@@ -19,7 +19,7 @@ var CommandHandler = /** @class */ (function () {
                     for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
                         var _a = files_1[_i], file = _a[0], fileName = _a[1];
                         var configuration = require(file);
-                        var _b = configuration.name, name_1 = _b === void 0 ? fileName : _b, commands = configuration.commands, aliases = configuration.aliases, callback = configuration.callback, execute = configuration.execute, description = configuration.description;
+                        var _b = configuration.name, name_1 = _b === void 0 ? fileName : _b, commands = configuration.commands, aliases = configuration.aliases, callback = configuration.callback, execute = configuration.execute, description = configuration.description, minArgs = configuration.minArgs, maxArgs = configuration.maxArgs;
                         if (callback && execute) {
                             throw new Error("Command ".concat(fileName, " has both callback and execute , please use one or the other"));
                         }
@@ -51,13 +51,22 @@ var CommandHandler = /** @class */ (function () {
                         var prefix = instance.getPrefix(guild);
                         if (content.startsWith(prefix)) {
                             content = content.substring(prefix.length);
-                            var words = content.split(/ /g);
-                            var firstElement = words.shift();
+                            var args = content.split(/ /g);
+                            var firstElement = args.shift();
                             if (firstElement) {
-                                var alias = firstElement.toLowerCase();
-                                var command = _this._commands.get(alias);
+                                var name_3 = firstElement.toLowerCase();
+                                var command = _this._commands.get(name_3);
                                 if (command) {
-                                    command.execute(message, words);
+                                    var minArgs = command.minArgs, maxArgs = command.maxArgs;
+                                    if (minArgs !== undefined && args.length < minArgs) {
+                                        message.reply("You need at least ".concat(minArgs, " arguments to run this command."));
+                                        return;
+                                    }
+                                    if (maxArgs !== undefined && maxArgs !== -1 && args.length > maxArgs) {
+                                        message.reply("You can only have a maximum of ".concat(maxArgs, " arguments to run this command."));
+                                        return;
+                                    }
+                                    command.execute(message, args);
                                 }
                             }
                         }
