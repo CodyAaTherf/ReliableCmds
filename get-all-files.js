@@ -21,7 +21,10 @@ var getAllFiles = function (dir) {
             jsFiles = __spreadArray(__spreadArray([], jsFiles, true), getAllFiles("".concat(dir, "/").concat(file.name)), true);
         }
         else {
-            jsFiles.push("".concat(dir, "/").concat(file.name));
+            var fileName = file.name.replace(/\\/g, '/').split('/');
+            fileName = fileName[fileName.length - 1];
+            fileName = fileName.split('.')[0].toLowerCase();
+            jsFiles.push(["".concat(dir, "/").concat(file.name), fileName]);
         }
     }
     return jsFiles;

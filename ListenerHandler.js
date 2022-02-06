@@ -14,8 +14,19 @@ var ListenerHandler = /** @class */ (function () {
                 if (amount > 0) {
                     console.log("Loading ".concat(amount, " listeners"));
                     for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
-                        var file = files_1[_i];
+                        var _a = files_1[_i], file = _a[0], fileName = _a[1];
                         var func = require(file);
+                        var feature = func.feature;
+                        if (!feature) {
+                            throw new Error("Listener ".concat(fileName, " has no feature property."));
+                        }
+                        var name_1 = feature.name, canDisable = feature.canDisable, notFeature = feature.notFeature;
+                        if (notFeature === true) {
+                            continue;
+                        }
+                        if (name_1 === undefined || canDisable === undefined) {
+                            throw new Error("Listener ".concat(fileName, " has no name or canDisable property."));
+                        }
                         if (typeof func === 'function') {
                             func(client);
                         }

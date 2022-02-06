@@ -6,6 +6,7 @@ var CommandHandler_1 = __importDefault(require("./CommandHandler"));
 var ListenerHandler_1 = __importDefault(require("./ListenerHandler"));
 var ReliableCmds = /** @class */ (function () {
     function ReliableCmds(client, commandsDir, listenerDir) {
+        var _this = this;
         this._defualtPrefix = ">";
         this._commandsDir = 'commands';
         this._mongo = '';
@@ -32,6 +33,11 @@ var ReliableCmds = /** @class */ (function () {
         if (this._listenerDir) {
             new ListenerHandler_1.default(client, this._listenerDir);
         }
+        setTimeout(function () {
+            if (!_this._mongo) {
+                console.warn('No mongo path provided');
+            }
+        }, 1000);
     }
     Object.defineProperty(ReliableCmds.prototype, "mongoPath", {
         get: function () {
