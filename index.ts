@@ -1,8 +1,13 @@
 import { Client , Guild } from 'discord.js';
+import { Document } from 'mongoose';
+import path from 'path';
+
 import CommandHandler from './CommandHandler';
 import ListenerHandler from './ListenerHandler';
 import ICommand from './interfaces/ICommand';
 import mongo from './mongo';
+import getAllFiles from './get-all-files';
+import prefixes from './modles/prefixes';
 
 class ReliableCmds{
     private _defualtPrefix = ">";
@@ -10,6 +15,7 @@ class ReliableCmds{
     // private _listenerDir: '';
     private _listenerDir: string | undefined;
     private _mongo = ''
+    private _syntaxError = 'Syntax Error: {PERFIX}{COMMAND}{ARGUMENTS}';
     private _prefixes: { [name: string]: string } = {};
     private _commandHandler: CommandHandler;
 
@@ -49,6 +55,25 @@ class ReliableCmds{
             }
         } , 500);
 
+        for (const [file, fileName] of getAllFiles(
+            path.join(__dirname, 'commands')
+        )) {
+            this._commandHandler.registerCommand(this, client, file, fileName)
+        }
+      
+        const loadPrefixes = async () => {
+            const results: any[] = await prefixes.find({})
+      
+            for (const result of results) {
+                const { _id, prefix } = result
+      
+                this._prefixes[_id] = prefix
+            }
+      
+            console.log(this._prefixes)
+        }
+
+        loadPrefixes()
     }
 
     public get mongoPath(): string {
@@ -57,6 +82,15 @@ class ReliableCmds{
 
     public setMongoPath(mongoPath: string): ReliableCmds{
         this._mongo = mongoPath;
+        return this;
+    }
+
+    public get syntaxError(): string{
+        return this._syntaxError;
+    }
+
+    public setSyntaxError(syntaxError: string): ReliableCmds{
+        this._syntaxError = syntaxError;
         return this;
     }
 
@@ -75,6 +109,16 @@ class ReliableCmds{
 
     public getPrefix(guild: Guild | null): string {
         return this._prefixes[guild ? guild.id : ''] || this._defualtPrefix;
+    }
+
+    public setPrefix(guild: Guild | null , prefix: string){
+        if(guild){
+            this._prefixes[guild.id] = prefix;
+        }
+    }
+
+    public get commandHandler(): CommandHandler {
+        return this._commandHandler;
     }
 
     public get commands(): ICommand[]{

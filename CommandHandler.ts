@@ -19,55 +19,7 @@ class CommandHandler {
                     console.log(`Found and Loaded ${amount} command(s)`);
 
                     for(const [file , fileName] of files){
-                        const configuration = require(file)
-                        const {
-                            name = fileName ,
-                            commands ,
-                            aliases ,
-                            callback ,
-                            execute ,
-                            description ,
-                            minArgs ,
-                            maxArgs ,
-                        } = configuration;
-
-                        if(callback && execute){
-                            throw new Error(`Command ${fileName} has both callback and execute , please use one or the other`);
-                        }
-
-                        let names = commands || aliases || [];
-
-                        if(!name && (!names || names.length === 0)){
-                            throw new Error(`Command ${fileName} has no name or aliases.`);
-                        }
-
-                        if(typeof names === 'string'){
-                            names = [names];
-                        }
-
-                        if(name && !names.includes(name.toLowerCase())){
-                            names.unshift(name.toLowerCase());
-                        }
-
-                        if(!description){
-                            console.warn(`Command ${fileName} has no description property.`);
-                        }
-
-                        const hasCallback = callback || execute;
-
-                        if(hasCallback){
-                            const command = new Command(
-                                instance ,
-                                client ,
-                                names ,
-                                callback || execute ,
-                                configuration
-                            )
-
-                            for(const name of names){
-                                this._commands.set(name , command);
-                            }
-                        }
+                        this.registerCommand(instance , client , file , fileName);
                     }
 
                     client.on('message' , (message) => {
@@ -85,15 +37,27 @@ class CommandHandler {
                                 const command = this._commands.get(name);
                                 
                                 if(command){
-                                    const{ minArgs , maxArgs } = command;
+                                    const { minArgs , maxArgs , expectedArgs } = command;
+                                    let { syntaxError = instance.syntaxError } = command;
 
-                                    if(minArgs !== undefined && args.length < minArgs){
-                                        message.reply(`You need at least ${minArgs} arguments to run this command.`);
-                                        return;
-                                    }
+                                    if(
+                                        (minArgs !== undefined && args.length < minArgs) ||
+                                        (maxArgs !== undefined &&
+                                            maxArgs !== -1 &&
+                                            args.length > maxArgs)
+                                    ){
+                                        if(syntaxError){
+                                            syntaxError = syntaxError.replace('{PERFIX}' , prefix);
+                                        }
 
-                                    if(maxArgs !== undefined && maxArgs !== -1 && args.length > maxArgs){
-                                        message.reply(`You can only have a maximum of ${maxArgs} arguments to run this command.`);
+                                        syntaxError = syntaxError.replace(/{COMMAND}/g , name);
+
+                                        syntaxError = syntaxError.replace(
+                                            / {ARGUMENTS}/g ,
+                                            expectedArgs ? ` ${expectedArgs}` : ''
+                                        )
+
+                                        message.reply(syntaxError);
                                         return;
                                     }
 
@@ -107,6 +71,62 @@ class CommandHandler {
                 throw new Error(`Command directory ${dir} does not exist`);
             }
         }
+    }
+
+    public registerCommand(
+        instance: ReliableCmds ,
+        client: Client ,
+        file: string ,
+        fileName: string
+    ){
+        const configuation = require(file);
+        const {
+            name = fileName ,
+            commands ,
+            aliases ,
+            callback ,
+            execute ,
+            description 
+        } = configuation
+
+        if(callback && execute){
+            throw new Error(`Command ${fileName} has both a callback and an execute function.`);
+        }
+
+        let names = commands || aliases || [];
+
+        if(!name && (!names || names.length === 0)){
+            throw new Error(`Command ${fileName} does not have a name or aliases.`);
+        }
+
+        if(typeof names === 'string'){
+            names = [names];
+        }
+
+        if(name && !names.includes(name.toLowerCase())){
+            names.unshift(name);
+        }
+
+        if(!description){
+            console.warn(`Command ${fileName} does not have a description.`);
+        }
+
+        const hasCallBack = callback || execute;
+
+        if(hasCallBack){
+            const command = new Command(
+                instance ,
+                client ,
+                name ,
+                callback || execute ,
+                configuation
+            )
+
+            for(const name of names){
+                this._commands.set(name.toLowerCase() , command);
+            }
+        }
+
     }
 
     public get commands(): ICommand[]{

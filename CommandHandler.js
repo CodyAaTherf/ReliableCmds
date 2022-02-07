@@ -18,32 +18,7 @@ var CommandHandler = /** @class */ (function () {
                     console.log("Found and Loaded ".concat(amount, " command(s)"));
                     for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
                         var _a = files_1[_i], file = _a[0], fileName = _a[1];
-                        var configuration = require(file);
-                        var _b = configuration.name, name_1 = _b === void 0 ? fileName : _b, commands = configuration.commands, aliases = configuration.aliases, callback = configuration.callback, execute = configuration.execute, description = configuration.description, minArgs = configuration.minArgs, maxArgs = configuration.maxArgs;
-                        if (callback && execute) {
-                            throw new Error("Command ".concat(fileName, " has both callback and execute , please use one or the other"));
-                        }
-                        var names = commands || aliases || [];
-                        if (!name_1 && (!names || names.length === 0)) {
-                            throw new Error("Command ".concat(fileName, " has no name or aliases."));
-                        }
-                        if (typeof names === 'string') {
-                            names = [names];
-                        }
-                        if (name_1 && !names.includes(name_1.toLowerCase())) {
-                            names.unshift(name_1.toLowerCase());
-                        }
-                        if (!description) {
-                            console.warn("Command ".concat(fileName, " has no description property."));
-                        }
-                        var hasCallback = callback || execute;
-                        if (hasCallback) {
-                            var command = new Command_1.default(instance, client, names, callback || execute, configuration);
-                            for (var _c = 0, names_1 = names; _c < names_1.length; _c++) {
-                                var name_2 = names_1[_c];
-                                this._commands.set(name_2, command);
-                            }
-                        }
+                        this.registerCommand(instance, client, file, fileName);
                     }
                     client.on('message', function (message) {
                         var guild = message.guild;
@@ -54,16 +29,21 @@ var CommandHandler = /** @class */ (function () {
                             var args = content.split(/ /g);
                             var firstElement = args.shift();
                             if (firstElement) {
-                                var name_3 = firstElement.toLowerCase();
-                                var command = _this._commands.get(name_3);
+                                var name_1 = firstElement.toLowerCase();
+                                var command = _this._commands.get(name_1);
                                 if (command) {
-                                    var minArgs = command.minArgs, maxArgs = command.maxArgs;
-                                    if (minArgs !== undefined && args.length < minArgs) {
-                                        message.reply("You need at least ".concat(minArgs, " arguments to run this command."));
-                                        return;
-                                    }
-                                    if (maxArgs !== undefined && maxArgs !== -1 && args.length > maxArgs) {
-                                        message.reply("You can only have a maximum of ".concat(maxArgs, " arguments to run this command."));
+                                    var minArgs = command.minArgs, maxArgs = command.maxArgs, expectedArgs = command.expectedArgs;
+                                    var _a = command.syntaxError, syntaxError = _a === void 0 ? instance.syntaxError : _a;
+                                    if ((minArgs !== undefined && args.length < minArgs) ||
+                                        (maxArgs !== undefined &&
+                                            maxArgs !== -1 &&
+                                            args.length > maxArgs)) {
+                                        if (syntaxError) {
+                                            syntaxError = syntaxError.replace('{PERFIX}', prefix);
+                                        }
+                                        syntaxError = syntaxError.replace(/{COMMAND}/g, name_1);
+                                        syntaxError = syntaxError.replace(/ {ARGUMENTS}/g, expectedArgs ? " ".concat(expectedArgs) : '');
+                                        message.reply(syntaxError);
                                         return;
                                     }
                                     command.execute(message, args);
@@ -78,6 +58,34 @@ var CommandHandler = /** @class */ (function () {
             }
         }
     }
+    CommandHandler.prototype.registerCommand = function (instance, client, file, fileName) {
+        var configuation = require(file);
+        var _a = configuation.name, name = _a === void 0 ? fileName : _a, commands = configuation.commands, aliases = configuation.aliases, callback = configuation.callback, execute = configuation.execute, description = configuation.description;
+        if (callback && execute) {
+            throw new Error("Command ".concat(fileName, " has both a callback and an execute function."));
+        }
+        var names = commands || aliases || [];
+        if (!name && (!names || names.length === 0)) {
+            throw new Error("Command ".concat(fileName, " does not have a name or aliases."));
+        }
+        if (typeof names === 'string') {
+            names = [names];
+        }
+        if (name && !names.includes(name.toLowerCase())) {
+            names.unshift(name);
+        }
+        if (!description) {
+            console.warn("Command ".concat(fileName, " does not have a description."));
+        }
+        var hasCallBack = callback || execute;
+        if (hasCallBack) {
+            var command = new Command_1.default(instance, client, name, callback || execute, configuation);
+            for (var _i = 0, names_1 = names; _i < names_1.length; _i++) {
+                var name_2 = names_1[_i];
+                this._commands.set(name_2.toLowerCase(), command);
+            }
+        }
+    };
     Object.defineProperty(CommandHandler.prototype, "commands", {
         get: function () {
             var results = new Map();

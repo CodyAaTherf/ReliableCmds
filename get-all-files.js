@@ -20,7 +20,7 @@ var getAllFiles = function (dir) {
         if (file.isDirectory()) {
             jsFiles = __spreadArray(__spreadArray([], jsFiles, true), getAllFiles("".concat(dir, "/").concat(file.name)), true);
         }
-        else {
+        else if (file.name.endsWith('.js')) {
             var fileName = file.name.replace(/\\/g, '/').split('/');
             fileName = fileName[fileName.length - 1];
             fileName = fileName.split('.')[0].toLowerCase();
