@@ -2,9 +2,9 @@
   "name": "reliablecmds",
   "version": "1.0.1",
   "description": "An Easy Discord.JS Command Handler for your use!",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "compile": "tsc && node index.js",
+    "compile": "tsc && node dist/index.js",
     "dev": "nodemon -e ts --exec \"npm run compile\""
   },
   "repository": {
