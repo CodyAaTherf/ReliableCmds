@@ -4,9 +4,11 @@ import ReliableCmds from '.';
 import Command from './Command';
 import getAllFiles from "./get-all-files";
 import ICommand from "./interfaces/ICommand";
+import disabledCommands from "./modles/disabled-commands";
 
 class CommandHandler {
     private _commands: Map<String , Command> = new Map();
+    private _disabled: Map<String , String[]> = new Map();
 
     constructor(instance: ReliableCmds , client: Client , dir: string){
         if(dir){
@@ -16,6 +18,7 @@ class CommandHandler {
 
                 const amount = files.length;
                 if (amount > 0){
+                    this.fetchDisabledCommands();
                     console.log(`Found and Loaded ${amount} command(s)`);
 
                     for(const [file , fileName] of files){
@@ -37,6 +40,19 @@ class CommandHandler {
                                 const command = this._commands.get(name);
                                 
                                 if(command){
+                                    
+                                    if(guild){
+                                        const isDisabled = instance.commandHandler.isCommandDisabled(
+                                            guild.id ,
+                                            command.names[0]
+                                        )
+
+                                        if(isDisabled){
+                                            message.reply(`This command is disabled.`);
+                                            return;
+                                        }
+                                    }
+
                                     const { minArgs , maxArgs , expectedArgs } = command;
                                     let { syntaxError = instance.syntaxError } = command;
 
@@ -130,16 +146,52 @@ class CommandHandler {
     }
 
     public get commands(): ICommand[]{
-        const results = new Map();
+        const results: { names: string[]; description: string; }[] = [];
 
         this._commands.forEach(({ names , description = ''}) => {
-            results.set(names[0] , {
-                names ,
+            results.push({
+                names: [...names] ,
                 description
             })
         })
 
-        return Array.from(results.values())
+       return results;
+    }
+
+    public async fetchDisabledCommands(){
+        const results: any[] = await disabledCommands.find({})
+
+        for(const result of results){
+            const { guildId , command } = result;
+
+            const array = this._disabled.get(guildId) || [];
+            array.push(command);
+            this._disabled.set(guildId , array);
+        }
+
+        console.log('Disabled Commands: ' , this._disabled);        
+    }
+
+    public disableCommand(guildId: string , command: string){
+        const array = this._disabled.get(guildId) || [];
+        if(array && !array.includes(command)){
+            array.push(command);
+            this._disabled.set(guildId , array);
+        }
+    }
+
+    public enableCommand(guildId: string , command: string){
+        const array = this._disabled.get(guildId) || [];
+        const index = array ? WebGLVertexArrayObject.indexOf(command) : -1;
+
+        if(array && index >= 0){
+            array.splice(index , 1);
+        }
+    }
+
+    public isCommandDisabled(guildId: string , command: string): boolean{
+        const array = this._disabled.get(guildId);
+        return (array && array.includes(command)) || false;
     }
 }
 

@@ -4,6 +4,7 @@
   "description": "An Easy Discord.JS Command Handler for your use!",
   "main": "dist/index.js",
   "scripts": {
+    "tsc": "tsc -w --outDir dist --rootDir src --skipLibCheck",
     "compile": "tsc && node dist/index.js",
     "dev": "nodemon -e ts --exec \"npm run compile\""
   },
