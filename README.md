@@ -14,6 +14,11 @@
 npm i reliablecmds
 ```
 
+Want to donwload the dev build? Warning - There might be constant feature changes and some might not work + doc could also not be updated so use at your own risk ...
+```bash
+npm i github:CodyAaTherf/ReliableCmds#dev
+```
+
 # Setup
 
 After you have installed ReliableCmds you need to initilize ReliableCmds in your project:
