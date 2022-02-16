@@ -1,3 +1,5 @@
+# I am going to stop working on this project as my exams are going to start and potentially offline school will also come. Don't worry , I am soon ( after exams ) going to make a new version of this.
+
 ![GitHub Repo stars](https://img.shields.io:/github/stars/CodyAaTherf/RelaibleCmds?style=social)
 
 # This package is Under Development.
